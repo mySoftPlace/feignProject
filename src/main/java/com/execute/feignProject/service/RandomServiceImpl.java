@@ -1,8 +1,6 @@
 package com.execute.feignProject.service;
 
-import com.execute.feignProject.client.FeignForServerTest;
-import com.execute.feignProject.threads.ThreadForRandomA;
-import com.execute.feignProject.threads.ThreadForRandomB;
+import com.execute.feignProject.threads.ThreadForRandom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,46 +11,24 @@ import static java.util.stream.Collectors.toList;
 @Service
 @RequiredArgsConstructor
 public class RandomServiceImpl implements RandomService {
-    private final ThreadForRandomA threadForRandomA;
+    private final ThreadForRandom runThreadA;
 
-    private final ThreadForRandomB threadForRandomB;
+    private final ThreadForRandom runThreadB;
 
     @Override
     public int executeRandomsSimultaneously(HashMap<String, String> dataToTreat) {
 
-        var values = dataToTreat.values().stream().collect(toList());
+        ThreadForRandom.entryValues = dataToTreat.values().stream().collect(toList());
 
-        int result = 0;
+        runThreadA.setThreadName("threadForRandomA");
+        runThreadB.setThreadName("threadForRandomB");
 
-        for (String val : values) {
+        Thread threadForRandomA = new Thread(runThreadA);
+        Thread threadForRandomB = new Thread(runThreadB);
 
-            // Thread for Random A
-            var startTimeThreadA = System.nanoTime();
-            threadForRandomA.setValueToTreat(val);
-            threadForRandomA.run();
-            var endTimeThreadA = System.nanoTime();
-            var executionTimeThreadA = endTimeThreadA - startTimeThreadA;
+        threadForRandomA.start();
+        threadForRandomB.start();
 
-            // Thread for Random B
-            var startTimeThreadB = System.nanoTime();
-            threadForRandomB.setValueToTreat(val);
-            threadForRandomB.run();
-            var endTimeThreadB = System.nanoTime();
-            var executionTimeThreadB = endTimeThreadB - startTimeThreadB;
-
-            if (executionTimeThreadA == executionTimeThreadB) { // Keep the response of the fastest method that does not throw an exception
-                if (threadForRandomA.getResult() > 0 && threadForRandomB.getResult() > 0) {
-                    result += threadForRandomA.getResult() + threadForRandomB.getResult();
-                }
-            } else if ((executionTimeThreadA < executionTimeThreadB) && (threadForRandomA.getResult() > 0)) {
-                result += threadForRandomA.getResult();
-            } else if (threadForRandomB.getResult() > 0) {
-                result += threadForRandomB.getResult();
-            } else if (threadForRandomA.getResult() > 0) {
-                result += threadForRandomA.getResult();
-            }
-
-        }
-        return result;
+        return ThreadForRandom.finalResult;
     }
 }
