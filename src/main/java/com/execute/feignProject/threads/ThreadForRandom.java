@@ -22,7 +22,7 @@ import java.util.Objects;
 public class ThreadForRandom implements Runnable {
 
     private final FeignForServerTest feignForServerTest;
-private static final String NO_THREAD = "noThread";
+    private static final String NO_THREAD = "noThread";
     private String threadName;
     static String fastestThread = NO_THREAD;
     public static int finalResult = 0;
@@ -31,19 +31,20 @@ private static final String NO_THREAD = "noThread";
     @Override
     public void run() {
 
-        try {
-            for (String val : entryValues) {
+        for (String val : entryValues) {
+            try {
                 if (this.getThreadName().equalsIgnoreCase("threadForRandomA")) {
 
                     randomTreatment(this.getThreadName(), feignForServerTest.randomA(val));
                 } else {
                     randomTreatment(this.getThreadName(), feignForServerTest.randomB(val));
                 }
+
+            } catch (Exception e) {
+                log.info("The http method throws some errors: {} and the random value is zero (0)", e.getMessage());
             }
-            log.info("All the values added up: {}", finalResult);
-        } catch (Exception e) {
-            log.info("The http method throws some errors: {} and the random value is zero (0)", e.getMessage());
         }
+        log.info("All the values added up: {}", finalResult);
     }
 
     private void randomTreatment(String threadName, int result) {
@@ -57,8 +58,7 @@ private static final String NO_THREAD = "noThread";
                 if (Objects.equals(fastestThread, NO_THREAD)) {
                     fastestThread = threadName;
                 }
-            }
-            else {
+            } else {
                 fastestThread = NO_THREAD;
             }
         }
