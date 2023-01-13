@@ -29,8 +29,6 @@ public class RandomServiceImpl implements RandomService {
         threadForRandomA.start();
         threadForRandomB.start();
 
-        runThreadA.getThreadName();
-
         return ThreadForRandom.finalResult;
     }
 }
